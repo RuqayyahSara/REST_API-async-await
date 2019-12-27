@@ -47,32 +47,60 @@ app.post("/", async (req,res)=>{
 })
 
 // PUT request - update by entering Id
-app.put("/user/:id", async(req,res)=>{
+// users.address.push({city:req.body.city,street:req.body.street,zip:req.body.zip});
+app.put("user/:id",async (req,res)=>{
     try{
-    let users = await userSchema.findById(req.params.id);
-    const {name, age} = req.body;
-    users.name = name;
-    users.age=age;
-    // users.city= city;
-    // users.zip=zip;
-
-    let updatedUser = await users.save();
-    res.json(updatedUser);
-    }catch(err){
-        if(err)
-     res.status(404).send("Cannot update data");
-    }
+    let users = await userSchema.findOneAndUpdate({_id:req.params.id,"address.id":req.params.id},{$set:{
+        name : req.body.name,
+        age: req.body.age,
+        "address.$.street" :req.body.address.street,
+        "address.$.zip" :req.body.address.zip
+        
+    }},{upsert:true});
+} catch(err){
+    if(err)
+    throw err;
+    res.send("Error in Modification");
+}
 })
 
+app.put("user/:id",(req,res)=>{
+    userSchema.findOneAndUpdate({_id:req.params.id}, (err,newForm)=>{
+        if(err)
+            throw err;
+    const {name, age} = req.body;
+    newForm.name = name;
+    newForm.age = age;
+    newForm.address.push({city:req.body.city,street:req.body.street,zip:req.body.zip});
+
+    newForm.save((err)=>{
+        if(err){
+            res.status(404).send("Error in updating database");
+        }
+        res.json(newForm);
+          });
+        });     
+});
+
 // DELETE request
-// app.delete("/:id",async (req,res)=>{
-//     try{
-//      await userSchema.findOneAndDelete( {_id:req.params.id});
-//     } catch(err){
-//         if(err)
-//         res.status(404).send("Cannot delete data from Database");
-//     }
-// })
+app.delete("/:id",(req,res)=>{
+    userSchema.findByIdAndRemove(req.params.id, (err)=>{
+        if(err){
+            throw err;
+        }
+        res.send("Data has been successfully deleted.");
+    });
+});
+
+// DELETE request - Delete all
+app.delete("/",(req,res)=>{
+    userSchema.remove({}, (err)=>{
+        if(err){
+            throw err;
+        }
+        res.send("Data has been successfully deleted.");
+    });
+});
 
 app.listen(port,(error)=>{
     if(error)
