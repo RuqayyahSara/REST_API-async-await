@@ -11,7 +11,7 @@ app.use(express.json({extended:false}));
 app.use(express.urlencoded({extended:false}));
 
 
-// GET request - read by Id
+// GET request - get user by Id
 app.get("/user/:id", async (req,res)=>{
     try{
         let users = await userSchema.findById(req.params.id);
@@ -22,7 +22,7 @@ app.get("/user/:id", async (req,res)=>{
     }
 })
 
-// GET request - read All
+// GET request - get all users
 app.get("/user", async (req,res)=>{
     try{
         let users = await userSchema.find({});
@@ -33,7 +33,7 @@ app.get("/user", async (req,res)=>{
     }
 })
 
-// POST request - create
+// POST request - create user
 app.post("/", async (req,res)=>{
  try{
     let newUser = new userSchema(req.body);
@@ -46,64 +46,60 @@ app.post("/", async (req,res)=>{
  }
 })
 
-// PUT request - update by entering Id
-// users.address.push({city:req.body.city,street:req.body.street,zip:req.body.zip});
-app.put("user/:id",async (req,res)=>{
+// PUT request - Add address to user
+app.put("/address/:id",async (req,res)=>{
+    const {city,street,zip}=req.body;
+    const addressField ={};
+    addressField.city=city;
+    addressField.street=street;
+    addressField.zip=zip;
     try{
-    let users = await userSchema.findOneAndUpdate({_id:req.params.id,"address.id":req.params.id},{$set:{
-        name : req.body.name,
-        age: req.body.age,
-        "address.$.street" :req.body.address.street,
-        "address.$.zip" :req.body.address.zip
-        
-    }},{upsert:true});
+    let users = await userSchema.findById(req.params.id);
+    users.address.unshift(addressField);
+    let updatedUser = await users.save();
+    res.json(updatedUser);
 } catch(err){
     if(err)
     throw err;
-    res.send("Error in Modification");
+    res.status(404).send("Cannot add address");
 }
 })
 
-app.put("user/:id",(req,res)=>{
-    userSchema.findOneAndUpdate({_id:req.params.id}, (err,newForm)=>{
-        if(err)
-            throw err;
-    const {name, age} = req.body;
-    newForm.name = name;
-    newForm.age = age;
-    newForm.address.push({city:req.body.city,street:req.body.street,zip:req.body.zip});
-
-    newForm.save((err)=>{
-        if(err){
-            res.status(404).send("Error in updating database");
-        }
-        res.json(newForm);
-          });
-        });     
-});
-
+// app.put("user/:id", async (req,res)=>{
+//     // let user= await userSchema.findOne({id:req.params.id});
+//     let {name,age}=req.body;
+//     // const userField={};
+//     // userField.name=name;
+//     // userField.age=age;
+//     try{
+//    let user = await userSchema.findOneAndUpdate(
+//     {_id: req.params.id},
+//     {$set:{name:name, age:age}},
+//     {$upsert: true}
+//     );
+//    res.json(user);
+//    }
+//    catch(err){
+//     res.status(400).send("Cannot Update profile");
+//    }
+// })
+        
 // DELETE request
-app.delete("/:id",(req,res)=>{
-    userSchema.findByIdAndRemove(req.params.id, (err)=>{
-        if(err){
-            throw err;
-        }
+app.delete("/:id",async (req,res)=>{
+    try{
+    let user = userSchema.findByIdAndRemove(req.params.id);
         res.send("Data has been successfully deleted.");
-    });
+    }
+    catch(err){
+        res.status(400).send("Cannot delete user");
+    }
 });
 
-// DELETE request - Delete all
-app.delete("/",(req,res)=>{
-    userSchema.remove({}, (err)=>{
-        if(err){
-            throw err;
-        }
-        res.send("Data has been successfully deleted.");
-    });
-});
 
 app.listen(port,(error)=>{
     if(error)
     throw error;
     console.log(`Listening on port ${port}`);
 })
+
+// request to update the user
