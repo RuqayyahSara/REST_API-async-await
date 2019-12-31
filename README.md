@@ -1,5 +1,5 @@
 # REST_API-async-await
-#### Implementing CRUD operations with Mongoose and MongoDB Atlas using async/await
+#### Implementing basic CRUD operations with Mongoose and MongoDB Atlas using async/await
 
 The following project uses :
 1. Express.js framework to create a server. 
