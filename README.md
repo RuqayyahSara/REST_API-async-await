@@ -8,21 +8,3 @@ The following project uses :
 
 REST API is implemented using async/await returning a promise and I have used relations in Schema.
 
-
-
-"name": "mamaSara",
-        "age": 10,
-        "address": [
-            {
-                "_id": "5e0bc22de274db29f0374ce6",
-                "city": "Al-Khobar",
-                "street": "Prince Mansoor,8th cross",
-                "zip": 7262
-            },
-            {
-                "_id": "5df931429ef59624cc9a83fd",
-                "street": "Adams Colony",
-                "city": "Hyderabad",
-                "zip": 1234
-            }
-        ]
